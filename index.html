@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/>
+    <title>笨笨的小鸟</title>
+    <script src="js/Sky.js"></script>
+    <script src="js/Land.js"></script>
+    <script src="js/pipe.js"></script>
+    <script src="js/Bird.js"></script>
+</head>
+<body>
+    <canvas width="800" height='600' id="canvas"></canvas>
+    <script>
+        var canvas = document.querySelector('#canvas');
+        var context = canvas.getContext('2d');
+        var skyImage = new Image();
+        var landImage = new Image();
+        var pipe1Image = new Image();
+        var pipe2Image = new Image();
+        var birdImage = new Image();
+        skyImage.src = 'img/sky.png';
+        landImage.src = 'img/land.png';
+        pipe1Image.src = 'img/pipe1.png';
+        pipe2Image.src = 'img/pipe2.png';
+        birdImage.src = 'img/birds.png';
+        var images = [skyImage,landImage,pipe1Image,pipe2Image];
+        var count = 0;
+        var rolesArr = [];
+        images.forEach(function (image) {
+            image.onload = function () {
+                count++;
+                if(count==images.length){
+                    console.log('图片加载好了');
+                    //创建角色并加入角色数组
+                    function creatRoles() {
+                        //创建天空背景
+                        for (var i = 0; i < 2; i++) {
+                            var info ={
+                                canvas:canvas,
+                                context:context,
+                                image:skyImage,
+                                x:skyImage.width*i
+                            }
+                            var sky = new Sky(info);
+                            rolesArr.push(sky);
+                        }
+                        //创建管道
+                        var gap_w = (canvas.width-pipe1Image.width*6)/5;
+                        for (var i = 0; i < 6; i++) {
+                            var info ={
+                                canvas:canvas,
+                                context:context,
+                                imageTop:pipe2Image,
+                                imageBottom:pipe1Image,
+                                gap_w:gap_w,
+                                x:(pipe1Image.width+gap_w)*i+300
+                            }
+                            var pipe = new Pipe(info);
+                            rolesArr.push(pipe);
+                        }
+                        //创建陆地对象
+                        for (var i = 0; i < 4; i++) {
+                            var info ={
+                                canvas:canvas,
+                                context:context,
+                                image:landImage,
+                                x:landImage.width*i
+                            }
+                            var land = new Land(info);
+                            rolesArr.push(land);
+                        }
+                        //创建小鸟对象
+                        var info = {
+                            canvas:canvas,
+                            context:context,
+                            image:birdImage,
+//                            startTime:new Date()
+                        }
+                        var bird = new Bird(info);
+                        rolesArr.push(bird);
+                    }
+                    creatRoles();
+                    //渲染角色数组里的角色在画布
+                    function action() {
+//                        var startTime = new Date();
+                        context.beginPath();
+                        context.clearRect(0,0,canvas.width,canvas.height);
+                        for (var i = 0; i < rolesArr.length; i++) {
+                            rolesArr[i].draw();
+                        }
+                        var bird = rolesArr[rolesArr.length-1];
+                        if(bird.y>=canvas.height-landImage.height-birdImage.height){
+                            return;
+                        }
+                        if(context.isPointInPath(bird.x+7,bird.y+10)||context.isPointInPath(bird.x+bird.w-7,bird.y+10)||context.isPointInPath(bird.x+7,bird.y+bird.h-10)||context.isPointInPath(bird.x+bird.w-7,bird.y+bird.h-10)){
+                            return;
+                        }
+//                        if(context.isPointInPath(bird.x+birdImage.width/6,bird.y+birdImage.height/6)){
+//                            return;
+//                        }
+
+                        window.requestAnimationFrame(action);
+                    }
+                    action();
+                    canvas.addEventListener('click', function () {
+                        rolesArr[rolesArr.length-1].speed = -6;
+                    })
+                }
+            }
+        })
+
+    </script>
+</body>
+</html>
